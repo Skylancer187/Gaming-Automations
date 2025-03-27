@@ -11,6 +11,10 @@
 		Quick Ludusavi CLI to backup and restore game saves to a USB Drive.
 #>
 
+# Configurations
+$cafeName = "Garnet Gaming Lounge"
+$sleepTime = "30"
+
 # Function to download the latest Ludusavi release
 function Download-Ludusavi
 {
@@ -19,26 +23,31 @@ function Download-Ludusavi
 	$asset = $releaseInfo.assets | Where-Object { $_.name -like "ludusavi-v*-win64.zip" }
 	$downloadUrl = $asset.browser_download_url
 	$latestVersion = $asset.name -replace "ludusavi-v([0-9.]+)-win64.zip", '$1'
-	$output = "G:\Ludusavi\ludusavi-win64.zip"
+	$output = "C:\Ludusavi\ludusavi-win64.zip"
 	
-	if (-not (Test-Path "G:\Ludusavi"))
+	if (-not (Test-Path "C:\Ludusavi"))
 	{
-		New-Item -Path "G:\Ludusavi" -ItemType Directory
-	}
-	
-	if (Test-Path "G:\Ludusavi\ludusavi.exe")
-	{
-		$currentVersion = & "G:\Ludusavi\ludusavi.exe" --version | ForEach-Object { $_ -replace "Ludusavi ([0-9.]+)", '$1' }
-		if ($currentVersion -eq $latestVersion)
-		{
-			Write-Host "Ludusavi is already up to date (version $currentVersion)."
-			return
-		}
+		New-Item -Path "C:\Ludusavi" -ItemType Directory
 	}
 	
 	Invoke-WebRequest -Uri $downloadUrl -OutFile $output
-	Expand-Archive -Path $output -DestinationPath "G:\Ludusavi" -Force
+	Expand-Archive -Path $output -DestinationPath "C:\Ludusavi" -Force
 	Remove-Item $output
+}
+
+# Function to find Ludusavi executable
+function Find-Ludusavi
+{
+	$drives = Get-PSDrive -PSProvider FileSystem | Select-Object -ExpandProperty Root
+	foreach ($drive in $drives)
+	{
+		$ludusaviPath = "$drive\Ludusavi\ludusavi.exe"
+		if (Test-Path $ludusaviPath)
+		{
+			return $ludusaviPath
+		}
+	}
+	return $null
 }
 
 # Function to monitor for USB drive insertion
@@ -72,8 +81,8 @@ function Backup-GameSaves
 	{
 		New-Item -Path $ludusaviPath -ItemType Directory
 	}
-	Copy-Item -Path "G:\Ludusavi\ludusavi.exe" -Destination $driveLetter
-	Start-Process -FilePath "G:\Ludusavi\ludusavi.exe" -ArgumentList "backup --path $ludusaviPath"
+	Copy-Item -Path "C:\Ludusavi\ludusavi.exe" -Destination $driveLetter
+	Start-Process -FilePath "C:\Ludusavi\ludusavi.exe" -ArgumentList "backup --path $ludusaviPath"
 }
 
 # Function to restore game saves
@@ -83,7 +92,7 @@ function Restore-GameSaves
 	$ludusaviPath = "$driveLetter\Ludusavi"
 	if (Test-Path $ludusaviPath)
 	{
-		Start-Process -FilePath "G:\Ludusavi\ludusavi.exe" -ArgumentList "restore --path $ludusaviPath"
+		Start-Process -FilePath "C:\Ludusavi\ludusavi.exe" -ArgumentList "restore --path $ludusaviPath"
 	}
 	else
 	{
@@ -92,13 +101,15 @@ function Restore-GameSaves
 }
 
 # Main script
-if (-not (Test-Path "G:\Ludusavi\ludusavi.exe"))
+$ludusaviExe = Find-Ludusavi
+if (-not $ludusaviExe)
 {
 	Download-Ludusavi
+	$ludusaviExe = "C:\Ludusavi\ludusavi.exe"
 }
 
 $driveLetter = Monitor-USB
-$choice = Read-Host "USB drive detected at $driveLetter. Would you like to (B)ackup or (R)estore game saves?"
+$choice = Read-Host "`nUSB drive detected at $driveLetter. Would you like to (B)ackup or (R)estore game saves?"
 
 switch ($choice.ToUpper())
 {
@@ -106,4 +117,9 @@ switch ($choice.ToUpper())
 	"R" { Restore-GameSaves -driveLetter $driveLetter }
 	default { Write-Host "Invalid choice. Please run the script again and choose either B or R." }
 }
-Start-Sleep 5
+
+Write-Host "`n`nLudusavi will execute in another window, please enter y/n to complete the backup/restore.`n`nAfter it's done, a copy of the current Ludusavi will be placed on your USB drive`nand you can execute it on another computer to backup/restore your saves.`nYou can backup your saves and bring them to $cafeName by running the tool to backup on your computer`nand restore at $cafeName computers."
+
+Write-Host "`n`nThanks for using our free tool, but we accept no responsiblities with lost or corrupt data.`nThis is a tool for use as a benefits to our guests."
+
+Start-Sleep -Seconds $sleepTime
