@@ -79,6 +79,31 @@ if (-not $mossExists)
 	# Cleanup MOSS
 	Remove-Item -Path $destinationPath -Force
 }
+else
+{
+	$UserPrompt = Read-Host "`n`n`Force Update MOSS Client?`nA client version is already installed.`ny/Y"
+	if ($UserPrompt -eq "y")
+	{
+		# Download MOSS
+		Write-Host "Downloading MOSS from $downloadUrl..."
+		Invoke-WebRequest -Uri $downloadUrl -OutFile $destinationPath
+		
+		# Ensure 7-Zip is installed
+		$sevenZipPath = "C:\Program Files\7-Zip\7z.exe"
+		if (-not (Test-Path $sevenZipPath))
+		{
+			Write-Error "7-Zip is required to extract the password-protected archive. Please install it first."
+			exit
+		}
+		
+		# Extract MOSS
+		Write-Host "Extracting MOSS to $extractPath..."
+		Start-Process -FilePath $sevenZipPath -ArgumentList "x `"$destinationPath`" -p`"$password`" -o`"$extractPath`" -y" -Wait
+		
+		# Cleanup MOSS
+		Remove-Item -Path $destinationPath -Force
+	}
+}
 
 function Get-GameCodeFromJson
 {
