@@ -97,6 +97,7 @@ else
 		}
 		
 		# Extract MOSS
+		Remove-Item -Path $extractPath -Recurse -Force
 		Write-Host "Extracting MOSS to $extractPath..."
 		Start-Process -FilePath $sevenZipPath -ArgumentList "x `"$destinationPath`" -p`"$password`" -o`"$extractPath`" -y" -Wait
 		
