@@ -11,6 +11,13 @@
 		Downloads, Installs, and Executes the MOSS Application for Esports Titles
 #>
 
+param
+(
+	[parameter(Mandatory = $false)]
+	[switch]$forceGameCode = "$false",
+	[string]$overrideGameCode = "nocode"
+)
+
 # Check for admin rights
 if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))
 {
@@ -163,7 +170,14 @@ function Get-GameCodeFromJson
 	}
 }
 
-$selectedGameCode = Get-GameCodeFromJson
+if (($forceGameCode -eq "$false") -and ($overideGameCode -eq "nocode"))
+{
+	$selectedGameCode = Get-GameCodeFromJson
+}
+else
+{
+$selectedGameCode = $overrideGameCode	
+}
 
 # Run MOSS with selected GameCode
 $mossExe = Get-ChildItem -Path $extractPath -Filter "*.exe" -Recurse | Select-Object -First 1
