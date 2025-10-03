@@ -176,7 +176,7 @@ if (($forceGameCode -eq "$false") -and ($overideGameCode -eq "nocode"))
 }
 else
 {
-$selectedGameCode = $overrideGameCode	
+	$selectedGameCode = $overrideGameCode
 }
 
 # Run MOSS with selected GameCode
@@ -184,7 +184,7 @@ $mossExe = Get-ChildItem -Path $extractPath -Filter "*.exe" -Recurse | Select-Ob
 if ($mossExe)
 {
 	Write-Host "`n`nLaunching MOSS with GameCode: $selectedGameCode ..."
-	Start-Process -FilePath $mossExe.FullName -ArgumentList "$selectedGameCode" -Verb RunAs
+	Start-Process -FilePath $mossExe.FullName -ArgumentList "`"$selectedGameCode`"" -Verb RunAs
 	
 	Write-Host "`n`nMOSS started, please collect your files when your done for submission to Admins. Files are saved to the Desktop!"
 	Start-Sleep 15
