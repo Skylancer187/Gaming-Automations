@@ -43,6 +43,7 @@ $destinationPath = "$env:USERPROFILE\Downloads\Moss.zip"
 $extractPath = "$env:USERPROFILE\MOSS"
 $password = "Moss"
 $gameCodeFile = "$extractPath\MOSSGameCodes.txt" # Ensure this file exists in the same folder as the script
+$gamecodeJSON = "https://nohope.eu/down/games.json" # This may require updates when location changes. Please see MOSS Admins.
 $processWatch = "MossX64"
 
 # Check if the folder exists
@@ -109,7 +110,7 @@ else
 function Get-GameCodeFromJson
 {
 	param (
-		[string]$JsonUrl = "https://nohope.eu/down/games.json",
+		[string]$JsonUrl = "$gamecodeJSON",
 		[string]$ParentPath = "$env:USERPROFILE\MOSS",
 		[string]$CsvPath = "$env:USERPROFILE\MOSS\games.csv"
 	)
